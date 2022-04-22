@@ -38,6 +38,14 @@ func (d *Daemon) tasksHandler(engine api.Engine) func(w http.ResponseWriter, r *
 	}
 }
 
+const (
+	EmojiSuccess    string = "&#9989;"
+	EmojiCanceled   string = "&#9898;"
+	EmojiFailure    string = "&#10060;"
+	EmojiInProgress string = "&#9203;"
+	EmojiScheduled  string = "&#128338;"
+)
+
 func (d *Daemon) listTasksHandler(engine api.Engine) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log := logging.S().With("req_id", r.Header.Get("X-Request-ID"))
@@ -83,8 +91,6 @@ func (d *Daemon) listTasksHandler(engine api.Engine) func(w http.ResponseWriter,
 		tf := "Mon Jan _2 15:04:05"
 
 		for _, t := range tasks {
-			result := decodeResult(t.Result)
-
 			currentTask := struct {
 				ID        string
 				Name      string
@@ -104,32 +110,31 @@ func (d *Daemon) listTasksHandler(engine api.Engine) func(w http.ResponseWriter,
 				t.Took().String(),
 				"",
 				"",
-				"",
+				t.Error,
 				"",
 				t.RenderCreatedBy(),
 			}
 
-			currentTask.Outcomes = result.String()
-			currentTask.Error = t.Error
-
 			switch t.State().State {
 			case task.StateComplete:
-				switch result.Outcome {
+				outcome := decodeOutcome(t)
+				currentTask.Outcomes = outcome.Content
+				switch outcome.Outcome {
 				case task.OutcomeSuccess:
-					currentTask.Status = "&#9989;"
+					currentTask.Status = EmojiSuccess
 				case task.OutcomeFailure:
-					currentTask.Status = "&#10060;"
+					currentTask.Status = EmojiFailure
 				default:
-					currentTask.Status = "&#10060;"
+					currentTask.Status = EmojiFailure
 				}
 			case task.StateCanceled:
-				currentTask.Status = "&#9898;"
+				currentTask.Status = EmojiCanceled
 			case task.StateProcessing:
-				currentTask.Status = "&#9203;"
+				currentTask.Status = EmojiInProgress
 				currentTask.Actions = fmt.Sprintf(`<a href=/kill?task_id=%s>kill</a><br/><a onclick="return confirm('Are you sure?');" href=/delete?task_id=%s>delete</a>`, t.ID, t.ID)
 				currentTask.Took = ""
 			case task.StateScheduled:
-				currentTask.Status = "&#128338;"
+				currentTask.Status = EmojiScheduled
 				currentTask.Took = ""
 			}
 
@@ -162,6 +167,27 @@ func decodeResult(result interface{}) *runner.Result {
 		logging.S().Errorw("error while decoding result", "err", err)
 	}
 	return r
+}
+
+type TaskOutcome struct {
+	Outcome task.Outcome `json:"outcome"`
+	Content string       `json:"content"`
+}
+
+func decodeOutcome(t task.Task) TaskOutcome {
+	switch t.Type {
+	case task.TypeBuild:
+		if t.Error == "" {
+			return TaskOutcome{Outcome: task.OutcomeSuccess, Content: fmt.Sprintf("artifacts: %s", t.Result)}
+		}
+		return TaskOutcome{Outcome: task.OutcomeFailure, Content: ""}
+	case task.TypeRun:
+		result := decodeResult(t.Result)
+		return TaskOutcome{Outcome: result.Outcome, Content: result.String()}
+	default:
+		logging.S().Errorw("Unknown task type", "type", t.Type)
+		return TaskOutcome{Outcome: task.OutcomeFailure, Content: ""}
+	}
 }
 
 func unescape(s string) template.HTML {
