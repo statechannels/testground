@@ -1093,7 +1093,7 @@ dependencies = [
 [[package]]
 name = "testground"
 version = "0.2.0"
-source = "git+https://github.com/testground/sdk-rust?rev=5c50ba4f63d2aff6b815cfbfcb0c8f9e4d73809e#5c50ba4f63d2aff6b815cfbfcb0c8f9e4d73809e"
+source = "git+https://github.com/laurentsenta/sdk-rust?rev=12a76e7de1f4e76df083b8f1deced35a231596eb#12a76e7de1f4e76df083b8f1deced35a231596eb"
 dependencies = [
  "clap",
  "futures",

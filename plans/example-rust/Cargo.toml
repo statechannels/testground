@@ -18,7 +18,7 @@ serde_json = "1"
 thiserror = "1"
 tokio = { version = "1", default-features = false, features = ["sync", "rt-multi-thread", "macros", "net"] }
 #testground = "0.1.1"
-testground = { git = 'https://github.com/testground/sdk-rust', rev = '5c50ba4f63d2aff6b815cfbfcb0c8f9e4d73809e' }
+testground = { git = 'https://github.com/laurentsenta/sdk-rust', rev = '2c02b883ad7bdf94b8c98651d3afcf42f702cb63' }
 
 #[patch.crates-io]
 #testground = { git = 'https://github.com/testground/sdk-rust', rev = '5c50ba4f63d2aff6b815cfbfcb0c8f9e4d73809e' }
