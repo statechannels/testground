@@ -58,7 +58,7 @@ func (v *Viewer) GetMeasurements(name string) ([]string, error) {
 	if response.Error() != nil {
 		return nil, response.Error()
 	}
-
+	fmt.Printf("response: %+v\n", response)
 	var measurements []string
 
 	if response.Results == nil || response.Results[0].Series == nil {

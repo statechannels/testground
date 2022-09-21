@@ -40,7 +40,7 @@ func (d *Daemon) dashboardHandler(engine api.Engine) func(w http.ResponseWriter,
 		}
 
 		name := clean(tsk.Plan) + "-" + tsk.Case
-
+		fmt.Printf("name: %s\n", name)
 		measurements, err := d.mv.GetMeasurements(name)
 		if err != nil {
 			fmt.Fprintf(w, "Cannot get measurements")
