@@ -84,7 +84,8 @@ func (e *EnvConfig) Load() error {
 	f := filepath.Join(e.dirs.Home(), ".env.toml")
 	if _, err := os.Stat(f); err == nil {
 		// try to load the optional .env.toml file
-		_, err = toml.DecodeFile(f, e)
+		data, err := toml.DecodeFile(f, e)
+		fmt.Printf("Loaded config from %s: %+v", f, data)
 		if err != nil {
 			return fmt.Errorf("found .env.toml at %s, but failed to parse: %w", f, err)
 		}
