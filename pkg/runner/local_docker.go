@@ -140,12 +140,13 @@ func (r *LocalDockerRunner) Healthcheck(ctx context.Context, engine api.Engine, 
 
 	additionalHosts := "ADDITIONAL_HOSTS="
 	fmt.Printf("Runner config %+v\n", engine.EnvConfig().Runners["local:docker"])
-	fmt.Printf("hosts config %+v\n of type %T", engine.EnvConfig().Runners["local:docker"]["additional_hosts"], engine.EnvConfig().Runners["local:docker"]["additional_hosts"])
+	fmt.Printf("hosts config %+v\n of type %T", engine.EnvConfig().Runners["local:docker"]["additional_hosts"])
 
 	envHosts, hasHosts := engine.EnvConfig().Runners["local:docker"]["additional_hosts"].([]string)
 	if hasHosts {
 		additionalHosts += strings.Join(envHosts, ",")
 	}
+	fmt.Printf("Cast successful: %v with %+v\n", hasHosts, envHosts)
 	sidecarContainerOpts := docker.EnsureContainerOpts{
 		ContainerName: "testground-sidecar",
 		ContainerConfig: &container.Config{
@@ -742,7 +743,7 @@ func attachContainerToNetwork(ctx context.Context, cli *client.Client, container
 	return cli.NetworkConnect(ctx, networkID, containerID, nil)
 }
 
-//nolint this function is unused, but it may come in handy.
+// nolint this function is unused, but it may come in handy.
 func detachContainerFromNetwork(ctx context.Context, cli *client.Client, containerID string, networkID string) error {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
