@@ -139,14 +139,19 @@ func (r *LocalDockerRunner) Healthcheck(ctx context.Context, engine api.Engine, 
 	}
 
 	additionalHosts := "ADDITIONAL_HOSTS="
-	fmt.Printf("Runner config %+v\n", engine.EnvConfig().Runners["local:docker"])
-	fmt.Printf("hosts config %+v\n of type %T", engine.EnvConfig().Runners["local:docker"]["additional_hosts"])
 
-	envHosts, hasHosts := engine.EnvConfig().Runners["local:docker"]["additional_hosts"].([]string)
+	envHosts, hasHosts := engine.EnvConfig().Runners["local:docker"]["additional_hosts"].([]interface{})
 	if hasHosts {
-		additionalHosts += strings.Join(envHosts, ",")
+		for _, host := range envHosts {
+			hostString, isValid := host.(string)
+			if !isValid {
+				return nil, fmt.Errorf("invalid host entry in additional_hosts: %v", host)
+			}
+
+			additionalHosts += hostString + ","
+		}
 	}
-	fmt.Printf("Cast successful: %v with %+v\n", hasHosts, envHosts)
+	fmt.Printf("ADDY HOSTS %s\n", additionalHosts)
 	sidecarContainerOpts := docker.EnsureContainerOpts{
 		ContainerName: "testground-sidecar",
 		ContainerConfig: &container.Config{
