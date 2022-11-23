@@ -139,6 +139,7 @@ func (r *LocalDockerRunner) Healthcheck(ctx context.Context, engine api.Engine, 
 	}
 
 	additionalHosts := "ADDITIONAL_HOSTS="
+	fmt.Printf("Runner config %+v\n", engine.EnvConfig().Runners["local:docker"])
 	envHosts, hasHosts := engine.EnvConfig().Runners["local:docker"]["additional_hosts"].([]string)
 	if hasHosts {
 		additionalHosts += strings.Join(envHosts, ",")
